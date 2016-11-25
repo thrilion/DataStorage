@@ -10,14 +10,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String TAG_MAIN_ACTIVITY = "In-MainActivity";
+    private static final String TAG_MAIN_ACTIVITY = "MainActivity";
     private static final String MY_SHARED_PREFERENCES = "MySharedPrefsKey";
-    private static final String outputFilename = "internalStorageFile.txt";
+    private static final String MESSAGE_STRING_KEY = "MessageStringKey";
+    private static final String OUTPUT_FILENAME = "internalStorageFile.txt";
     //private static final String outputFilename = "internalStorageFile2.txt";
 
-    private TextView mHello_TxtView;
+    private TextView mCentralTxtView;
     private EditText mUpdate_EdtTxt;
     private SharedPreferences mSharedPrefs;
     private int mCurViewMode;
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.mHello_TxtView = (TextView) this.findViewById(R.id.textViewHello);
+        this.mCentralTxtView = (TextView) this.findViewById(R.id.textViewHello);
         this.mUpdate_EdtTxt = (EditText) this.findViewById(R.id.edtTextUpdate);
         final Button ok_Btn = (Button) this.findViewById(R.id.btnOk);
         final Button internalStorage_Btn = (Button) this.findViewById(R.id.btnInternalStorage);
@@ -42,19 +43,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         createDB_Btn.setOnClickListener(this);
 
         //Comprobamos si hay datos en las Shared Preferences y los cargamos en caso que los haya
-        SharedPreferences mSettings = this.getSharedPreferences(MainActivity.MY_SHARED_PREFERENCES, Context.MODE_PRIVATE);
-        String mString = mSettings.getString("myStringKey", "");
-        if (!mString.isEmpty()) {
-            Log.i(MainActivity.TAG_MAIN_ACTIVITY, "SharedPreferences available: " + mString);
-            this.mHello_TxtView.setText(mString);
+        this.mSharedPrefs = this.getSharedPreferences(MainActivity.MY_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        String message = this.mSharedPrefs.getString(MESSAGE_STRING_KEY, "");
+        if (!message.isEmpty()) {
+            Log.i(MainActivity.TAG_MAIN_ACTIVITY, "SharedPreferences available: " + message);
+            this.mCentralTxtView.setText(message);
         }
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
+        //Guardamos los datos de interés en Shared Preferences (en este caso el valor del TextView).
+        //Hacemos esto en onPause(), que es el último método que Android nos asegura que se va a ejecutar.
         SharedPreferences.Editor editor = mSharedPrefs.edit();
-        editor.putInt("view_mode", mCurViewMode);
+        editor.putString(MESSAGE_STRING_KEY, this.mCentralTxtView.getText().toString());
         editor.apply();
     }
 
